@@ -1,9 +1,11 @@
 import React from 'react';
 import { Map } from './Map';
-import { calculateAndDisplayRoute } from './google';
+import { calculateAndDisplayRoute, resolveAddresses } from './google';
 
 export const App: React.FC = () => {
   const [directions, setDirections] = React.useState('');
+  const [order, setOrder] = React.useState<string[]>([]);
+  // const [order, setOrder] = React.useState<number[]>([]);
   const [info, setInfo] = React.useState('');
   return (
     <div
@@ -20,20 +22,52 @@ export const App: React.FC = () => {
           onChange={(e) => {
             localStorage.setItem('addresses', e.target.value);
           }}
-          style={{ width: '50%', padding: 8 }}
+          style={{ width: '40%', padding: 8 }}
           rows={10}
           placeholder=" Enter Addresses..."
         ></textarea>
+        <div
+          style={{
+            width: '40%',
+            overflow: 'scroll',
+            height: 200,
+            padding: 8,
+            border: '1px solid black',
+            borderLeft: 0,
+          }}
+        >
+          {!!order.length && (
+            <>
+              Ideal order of stops:{' '}
+              <ol type="A">
+                {order.map((o, i) => (
+                  <li style={{ whiteSpace: 'pre' }} key={i}>
+                    {o}
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+        </div>
         <div
           style={{
             height: 200,
             overflow: 'scroll',
             width: '50%',
             padding: 8,
-            border: '1px solid transparent',
+            border: '1px solid black',
+            borderLeft: 0,
           }}
-          dangerouslySetInnerHTML={{ __html: directions || 'Directions...' }}
-        ></div>
+        >
+          {directions && (
+            <div>
+              Directions:
+              <br />
+              <br />
+            </div>
+          )}
+          <div dangerouslySetInnerHTML={{ __html: directions }} />
+        </div>
       </div>
       <div style={{ padding: 8 }}>
         {/* <label>
@@ -74,6 +108,9 @@ export const App: React.FC = () => {
                 directions.totalDistance * 0.0006
               ).toFixed(2)} miles`
             );
+            const coded = await resolveAddresses([start, ...addresses, end]);
+            directions.newOrder.map((o) => coded[o]);
+            setOrder(coded);
           }}
         >
           Calculate!

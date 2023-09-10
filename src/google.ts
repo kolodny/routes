@@ -65,25 +65,25 @@ CalculateRouteParams) => {
   });
 
   directionsRenderer.setDirections(directions);
+  const route = directions.routes[0];
   let totalTime = 0;
   let totalDistance = 0;
-  const instructions = directions.routes[0].legs.flatMap((leg) =>
+  const instructions = route.legs.flatMap((leg) =>
     leg.steps
       .flatMap((step) => {
         totalTime += step.duration?.value || 0;
         totalDistance += step.distance?.value || 0;
-        return `<span style="width:10px;display:inline-block"></span>For ${
-          step.distance?.text
-        } (${step.duration?.text}) ${step.instructions.replace(
-          /<div/g,
-          ' <span'
-        )}`;
+        const instructions = step.instructions
+          .replace(/<div/g, ' <span')
+          .replace(/<\/div/g, '</span');
+        return `<span style="width:10px;display:inline-block"></span>For ${step.distance?.text} (${step.duration?.text}) ${instructions}`;
       })
       .concat(`STOP - ${leg.end_address}`)
   );
   instructions.pop();
   instructions.unshift(`START - ${startAddress}`);
+  const newOrder = route.waypoint_order;
 
   console.log(directions);
-  return { instructions, totalTime, totalDistance };
+  return { instructions, totalTime, totalDistance, newOrder };
 };
