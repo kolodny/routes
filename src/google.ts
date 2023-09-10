@@ -80,7 +80,6 @@ CalculateRouteParams) => {
       })
       .concat(`STOP - ${leg.end_address}`)
   );
-  instructions.pop();
   instructions.unshift(`START - ${startAddress}`);
   const newOrder = route.waypoint_order;
 
