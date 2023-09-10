@@ -76,7 +76,7 @@ CalculateRouteParams) => {
         const instructions = step.instructions
           .replace(/<div/g, ' <span')
           .replace(/<\/div/g, '</span');
-        return `<span style="width:10px;display:inline-block"></span>For ${step.distance?.text} (${step.duration?.text}) ${instructions}`;
+        return `<span style="width:10px;display:inline-block"></span>${instructions} - (${step.distance?.text}, ${step.duration?.text})`;
       })
       .concat(`STOP - ${leg.end_address}`)
   );
