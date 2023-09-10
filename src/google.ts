@@ -19,19 +19,20 @@ export const resolveAddresses = async (addresses: string[]) => {
   if (unknowns.length) {
     const response = await distanceMatrixService.getDistanceMatrix({
       origins: ['7 N Madison Ave, Spring Valley, NY 10977, USA'],
-      destinations: unknowns.map((u) => `${u}, Rockland County, NY, USA`),
+      destinations: [...new Set(unknowns)].map(
+        (u) => `${u}, Rockland County, NY, USA`
+      ),
       travelMode: google.maps.TravelMode.DRIVING,
       unitSystem: google.maps.UnitSystem.IMPERIAL,
       region: 'us',
     });
-    console.log(response);
     response.destinationAddresses.map((address, index) => {
       const unknown = unknowns[index];
       localStorage.setItem(`address:${unknown}`, JSON.stringify(address));
       resultsMap[unknown] = address;
     });
   }
-  return addresses.map((address) => resultsMap[address]);
+  return [...new Set(addresses.map((address) => resultsMap[address]))];
 };
 
 interface CalculateRouteParams {
@@ -60,7 +61,6 @@ export const calculateAndDisplayRoute = async ({
   });
 
   directionsRenderer.setDirections(directions);
-  console.log(directions);
   let totalTime = 0;
   let totalDistance = 0;
   const instructions = directions.routes[0].legs.flatMap((leg) =>
@@ -68,10 +68,18 @@ export const calculateAndDisplayRoute = async ({
       .flatMap((step) => {
         totalTime += step.duration?.value || 0;
         totalDistance += step.distance?.value || 0;
-        return `For ${step.distance?.text} (${step.duration?.text}) ${step.instructions}`;
+        return `<span style="width:10px;display:inline-block"></span>For ${
+          step.distance?.text
+        } (${step.duration?.text}) ${step.instructions.replace(
+          /<div/g,
+          ' <span'
+        )}`;
       })
       .concat(`STOP - ${leg.end_address}`)
   );
   instructions.pop();
+  instructions.unshift(`START - ${startAddress}`);
+
+  console.log(directions);
   return { instructions, totalTime, totalDistance };
 };
