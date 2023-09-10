@@ -45,8 +45,8 @@ export const calculateAndDisplayRoute = async ({
   start,
   end,
   waypoints,
-  targetTime,
-}: CalculateRouteParams) => {
+}: // targetTime,
+CalculateRouteParams) => {
   const [startAddress, endAddress, ...waypointAddresses] =
     await resolveAddresses([start, end, ...waypoints]);
   const directions = await directionsService.route({
@@ -55,9 +55,13 @@ export const calculateAndDisplayRoute = async ({
     waypoints: waypointAddresses.map((waypoint) => ({ location: waypoint })),
     optimizeWaypoints: true,
     travelMode: google.maps.TravelMode.DRIVING,
-    transitOptions: {
-      arrivalTime: targetTime,
-    },
+    // drivingOptions: {
+    //   trafficModel: google.maps.TrafficModel.BEST_GUESS,
+    //   departureTime: targetTime,
+    // },
+    // transitOptions: {
+    //   arrivalTime: targetTime,
+    // },
   });
 
   directionsRenderer.setDirections(directions);
