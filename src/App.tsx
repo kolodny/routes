@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import React from 'react';
 import { Map } from './Map';
 import {
@@ -143,6 +144,7 @@ export const App: React.FC = () => {
             onClick={(e) => {
               (window as any).markers.forEach((m: any) => m.setMap(null));
               (window as any).markers = [];
+              // @ts-ignore
               const which = e.target.checked
                 ? (window as any).originalDirections
                 : (window as any).optimizedWaypoints;
@@ -156,7 +158,7 @@ export const App: React.FC = () => {
                 ).toFixed(2)} miles`
               );
               setDirections(info.instructions.join('<br />'));
-              which.routes[0].legs?.map((leg, index) => {
+              which.routes[0].legs?.map((leg: any, index: any) => {
                 (window as any).markers.push(
                   new google.maps.Marker({
                     map: (window as any).map,
