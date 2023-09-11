@@ -1,6 +1,11 @@
 import React from 'react';
 import { Map } from './Map';
-import { calculateAndDisplayRoute, resolveAddresses } from './google';
+import {
+  calculateAndDisplayRoute,
+  calculateRouteInfo,
+  directionsRenderer,
+  resolveAddresses,
+} from './google';
 
 export const App: React.FC = () => {
   const [directions, setDirections] = React.useState('');
@@ -39,7 +44,7 @@ export const App: React.FC = () => {
           {!!order.length && (
             <>
               Ideal order of stops:{' '}
-              <ol type="A">
+              <ol>
                 {order.map((o, i) => (
                   <li style={{ whiteSpace: 'pre' }} key={i}>
                     {o}
@@ -101,6 +106,7 @@ export const App: React.FC = () => {
               waypoints: addresses,
             });
             setDirections(directions.instructions.join('<br />'));
+
             setInfo(
               `Total time: ${(directions.totalTime / 60).toFixed(
                 2
@@ -108,13 +114,63 @@ export const App: React.FC = () => {
                 directions.totalDistance * 0.0006
               ).toFixed(2)} miles`
             );
+            (window as any).markers = (window as any).markers || [];
+            directions.optimizedWaypoints.routes[0].legs?.map((leg, index) => {
+              (window as any).markers.push(
+                new google.maps.Marker({
+                  map: (window as any).map,
+                  position: leg.end_location,
+                  title: `Stop #${index + 1}`,
+                  label: `${index + 1}`,
+                  clickable: true,
+                })
+              );
+            });
             const coded = await resolveAddresses([start, ...addresses, end]);
-            directions.newOrder.map((o) => coded[o]);
-            setOrder(coded);
+            const newORder = directions.newOrder.map(
+              (o, i) =>
+                `${i !== o ? `(Was stop: #${o + 1}) ` : ''}${coded[o + 1]}`
+            );
+
+            setOrder(newORder);
           }}
         >
           Calculate!
         </button>
+        <label>
+          <input
+            type="checkbox"
+            onClick={(e) => {
+              (window as any).markers.forEach((m: any) => m.setMap(null));
+              (window as any).markers = [];
+              const which = e.target.checked
+                ? (window as any).originalDirections
+                : (window as any).optimizedWaypoints;
+              directionsRenderer.setDirections(which);
+              const info = calculateRouteInfo(which.routes[0]);
+              setInfo(
+                `Total time: ${(info.totalTime / 60).toFixed(
+                  2
+                )} minutes, total distance: ${(
+                  info.totalDistance * 0.0006
+                ).toFixed(2)} miles`
+              );
+              setDirections(info.instructions.join('<br />'));
+              which.routes[0].legs?.map((leg, index) => {
+                (window as any).markers.push(
+                  new google.maps.Marker({
+                    map: (window as any).map,
+                    position: leg.end_location,
+                    title: `Stop #${index + 1}`,
+                    label: `${index + 1}`,
+                    clickable: true,
+                  })
+                );
+              });
+            }}
+          />{' '}
+          Show original route
+        </label>
         {info && <span style={{ padding: 8 }}>Route info: {info}</span>}
       </div>
 

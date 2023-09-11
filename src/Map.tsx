@@ -12,6 +12,7 @@ export const Map: React.FC = () => {
         center: { lat: 41.11324537782926, lng: -74.044221061934 },
         zoom: 12,
       });
+      (window as any).map = map.current;
       directionsRenderer.setMap(map.current);
     }
   }, []);
